@@ -6,6 +6,6 @@ This bot serves as personal diary for me, to controll my healthy state
 Find me [here](https://t.me/medical_help_bot)
 
 ## License
-Copyright (c) 2020 [Danil Dynikov](https://github.com/ddynikov)
+Copyright (c) 2020
 
 This software is [MIT licensed](./LICENSE).
