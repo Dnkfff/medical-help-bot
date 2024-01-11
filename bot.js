@@ -2,71 +2,141 @@
 
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const fs = require('fs');
-const http = require('http');
-const PORT = process.env.PORT;
-const FUNCTIONS = require('./modules/functions.js');
-// const analyzes = require('./analyzes/analyzes.js');
+const axios = require('axios');
 
-const groupID = -1001120268273; //logs function
 bot.use(async (ctx, next) => {
   if (ctx.updateSubTypes[0] === 'text') {
-    bot.telegram.sendMessage(groupID,
-      ctx.from.username + ' написал: ' + ctx.message.text);
+    bot.telegram.sendMessage(-498566951, ctx.from.username + ' написав: ' + ctx.message.text);
   } else if (ctx.updateType === 'callback_query') {
-    bot.telegram.sendMessage(groupID,
-      ctx.from.username + ' тыкнул кнопку');
+    bot.telegram.sendMessage(-498566951, ctx.from.username + ' натиснув кнопку');
   } else {
-    bot.telegram.sendMessage(groupID,
-      ctx.from.username + ' написал: ' + ctx.updateSubTypes[0]);
+    bot.telegram.sendMessage(-498566951, ctx.from.username + ' написав: ' + ctx.updateSubTypes[0]);
   }
   next();
 });
 
-const start = ctx => {
-  ctx.deleteMessage();
-  FUNCTIONS.sendStartMessage(ctx, bot);
+//start message logger
+function sendStartMessage(ctx) {
+  let startMessage = `Здрастуйте, цей бот служить особистим щоденником Дані,
+                      в ньому записані всі аналізи та кількість таблеток яка
+                      він випив протягом якогось часу`;
+  if (ctx.from.username === 'ddynikov') {
+    startMessage = 'Привіт хазяїн';
+
+  }
+  bot.telegram.sendMessage(ctx.chat.id, startMessage,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: 'Я ендокренолог', callback_data: 'doc' }
+          ],
+          [
+            { text: 'Я не лікар', callback_data: 'user' }
+          ],
+          [
+            { text: 'інформація', callback_data: 'info' }
+          ]
+        ]
+      }
+    });
+}
+
+//кривая генерация выплёвывания рандомных фактов
+const getData = async () => {
+      // ↓ encapsulate  ↓
+  //const json = await axios('https://spreadsheets.google.com/feeds/cells/1JBUpCCPwOpUOFyPCmeqhUZmbvDoTc_Hytb52RRv_vhE/1/public/full?alt=json');
+  const data = json.data.feed.entry;
+  const factStore = [];
+  data.forEach(item => {
+    factStore.push({
+      row: item.gs$cell.row,
+      col: item.gs$cell.col,
+      val: item.gs$cell.inputValue,
+    });
+  });
+  return (factStore);
 };
 
-bot.action('pills', ctx => {
-  new Promise(resolve => {
-    const doseStore = FUNCTIONS.getDose();
-    ctx.deleteMessage();
-    resolve(doseStore);
-  })
-    .then(result => {
-      const cells = result;
-      result.unshift();
-      const dose = cells[0];
-      const message = `${dose.val}`;
-      const chatID = ctx.update.callback_query.message.chat.id;
+bot.action('doc', ctx => {
+  const infoMessage = 'Узнать информацию. Выберите, что хотите узнать';
+  ctx.deleteMessage();
+  bot.telegram.sendMessage(ctx.chat.id, infoMessage, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: 'Прошлые анализы', callback_data: 'analyses' },
+        ],
+        [
+          { text: 'Таблетки', callback_data: 'pills' },
+        ],
+        [
+          { text: 'Вернуться в меню', callback_data: 'start' },
+        ]
+      ]
+    }
 
-      bot.telegram.sendMessage(chatID, message, {
-        'reply_markup': {
-          'inline_keyboard': [
-            [
-              { text: 'Вернуться назад', 'callback_data': 'doc' },
-            ],
-          ]
-        }
-      });
-    });
+  });
+
 });
 
-bot.action('doc', ctx => {
+// bot.command('pills', ctx => {
+
+// })
+
+// bot.action('pills', ctx => {
+
+// })
+
+bot.action('analyses', ctx => {
+  const infoMessage = 'Оберіть дату забору крові';
   ctx.deleteMessage();
-  const infoMessage = 'Узнать информацию. Выберите, что хотите узнать';
   bot.telegram.sendMessage(ctx.chat.id, infoMessage, {
-    'reply_markup': {
-      'inline_keyboard': [
+    reply_markup: {
+      inline_keyboard: [
         [
-          { text: 'Прошлые анализы', 'callback_data': 'analyzes' },
+          { text: 'Гормони 22-05-2020', callback_data: 'gor1' },
+
         ],
         [
-          { text: 'Таблетки', 'callback_data': 'pills' },
+          { text: 'Гормони 01-04-2020', callback_data: 'gor2' },
+
         ],
         [
-          { text: 'Вернуться в меню', 'callback_data': 'back' },
+          { text: 'Гормони 30-10-2019', callback_data: 'gor3' },
+        ],
+        [
+          { text: 'Гормони 29-08-2019', callback_data: 'gor4' },
+
+        ],
+        [
+          { text: 'Повернутись назад', callback_data: 'doc' },
+        ]
+      ]
+    }
+
+  });
+
+});
+
+bot.action('user', ctx => {
+  const infoMessage = 'Цей бот зберігає в собі дані аналізів.';
+  ctx.deleteMessage();
+  bot.telegram.sendMessage(ctx.chat.id, infoMessage, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: 'Рандомний факт', callback_data: 'fact' },
+
+        ],
+        [
+          { text: 'Подивитись дослідження', callback_data: 'analyses' },
+        ],
+        [
+          { text: 'Пігулки', callback_data: 'pills' },
+        ],
+        [
+          { text: 'Повернутись назад', callback_data: 'start' },
         ]
       ]
     }
@@ -74,65 +144,66 @@ bot.action('doc', ctx => {
   });
 });
 
+bot.action('fact', async ctx => {
+  const factStore = await getData();
+  factStore.shift();
 
-bot.action('analyzes', async ctx => {
+
+  const k = Math.floor(Math.random() * factStore.length);
+  const fact = factStore[k];
+  const message = `${fact.val}`;
+
+  ctx.reply(message);
+});
+
+bot.command('update', async ctx => {
+  try {
+    ctx.reply('updated');
+  } catch (err) {
+    console.log(err);
+    ctx.reply('ERROR');
+  }
+});
+
+bot.command('start', ctx => {
+  sendStartMessage(ctx);
+});
+
+bot.action('start', ctx => {
   ctx.deleteMessage();
-  //  ctx.answerCbQuery();
-  const photos = await fs.promises.readdir('./analyzes');
-  const infoMessage = 'Какие анализы Вас интересуют?';
-  const keyboard = [];
-  photos.forEach(photo => {
-    keyboard.push([{
-      text: photo.slice(0, photo.length - 4),
-      'callback_data': photo
-    }]);
-    bot.action(photo, ctx => {
-      bot.telegram.sendPhoto(ctx.chat.id, { source: `./analyzes/${photo}` });
-    });
-  });
-  keyboard.push([{ text: 'Вернуться назад', 'callback_data': 'doc' }]);
-  bot.telegram.sendMessage(ctx.chat.id, infoMessage, {
-    'reply_markup': {
-      'inline_keyboard': keyboard
-    }
-  });
+  sendStartMessage(ctx);
 });
 
-bot.action('fact', ctx => {
-  new Promise(resolve => {
-    const factStore = FUNCTIONS.getFact();
-    ctx.deleteMessage();
-    resolve(factStore);
-  })
-    .then(result => {
-      const cells = result;
-      result.shift();
-      const k = Math.floor(Math.random() * cells.length);
-      const fact = cells[k];
-      const message = `${fact.val}`;
-      const chatID = ctx.update.callback_query.message.chat.id;
-      bot.telegram.sendMessage(chatID, message, {
-        'reply_markup': {
-          'inline_keyboard': [
-            [
-              { text: 'Ещё факт!', 'callback_data': 'fact' },
+/*об'єкт, який сторить в собі дати забору крові.
+(в папці analyses вони підписани та за допомоги for loop код обробляє дані); */
+const initial = {
+  first: '22-05-20',
+  second: '01-04-2020',
+  third: '30-10-2019',
+  fourth: '29-08-2019',
+};
 
-            ],
-            [
-              { text: 'Вернуться назад', 'callback_data': 'back' },
-            ]
-          ]
-        }
-      });
+for (let i = 1; i <= 4; i++) {
+  let date = initial.first;
+
+  bot.action(`gor${i}`, ctx => {
+    bot.telegram.sendPhoto(ctx.chat.id, {
+      source: `analyses/gor${date}.jpg`
     });
-});
+  });
+  if (i === 2) {
+    date = initial.second;
+  } else if (i === 3) {
+    date = initial.third;
+  } else if (i === 4) {
+    date = initial.fourth;
+  }
+}
 
-bot.action('back', ctx => start(ctx));
-bot.command('start', ctx => start(ctx));
 
-http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end('I am medical-help-bot');
-}).listen(PORT);
+// bot.command('/info', (ctx) => {
+//     ctx.reply('123')
+// });
 
-bot.launch();
+bot.telegram.setWebhook(`${process.env.BOT_URL}/bot${process.env.BOT_TOKEN}`);
+bot.startWebhook(`/bot${process.env.BOT_TOKEN}`, null, process.env.PORT);
