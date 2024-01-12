@@ -2,7 +2,8 @@
 
 const axios = require('axios');
 
-//generating random facts
+// генерація фактів, які треба поповнювати за допомогою гугл таблички
+// імплементувати з нейронкою
 const getFact = async () => {
   const json = await axios(process.env.GOOGLE_SHEET);
   const data = json.data.feed.entry;
@@ -32,25 +33,24 @@ const getDose = async () => {
 };
 
 function sendStartMessage(ctx, bot) {
-  let startMessage = `Здравствуйте!
-    Этот бот служит личным дневником Дани,
-    в нём хранятся все анализы и дозировка таблеток, 
-    так же можно посмотреть рандомный факт из медицины `;
+  let startMessage = `Вітаю! Цей бот слугує особистим щоденником Дані,
+                      в ньому записані всі аналізи та кількість таблеток яка
+                      він випив протягом якогось часу`;
   if (ctx.from.username === 'ddynikov') {
-    startMessage = 'Привет хозяин';
+    startMessage = 'Привіт хазяїн';
   } else if (ctx.from.username === 'tshemsedinov') {
-    startMessage = `Здравствуйте преподователь!
-      Рад Вам представить мою курсовую работу`;
+    startMessage = `Ку викладач!
+      То колись була моя курсова`;
   }
   bot.telegram.sendMessage(ctx.chat.id, startMessage,
     {
       'reply_markup': {
         'inline_keyboard': [
           [
-            { text: 'Просмотреть анализы и дозировку', 'callback_data': 'doc' }
+            { text: 'Подивитись аналізи та/або дозування', 'callback_data': 'doc' }
           ],
           [
-            { text: 'Интересные факты о медицине', 'callback_data': 'fact' }
+            { text: 'Якісь рандомні факти з медицини xD', 'callback_data': 'fact' }
           ],
         ]
       }

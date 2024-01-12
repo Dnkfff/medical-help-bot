@@ -2,22 +2,23 @@
 
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.BOT_TOKEN);
+const privateGroupID = process.env.GROUPID
 const axios = require('axios');
 
 bot.use(async (ctx, next) => {
   if (ctx.updateSubTypes[0] === 'text') {
-    bot.telegram.sendMessage(-498566951, ctx.from.username + ' написав: ' + ctx.message.text);
+    bot.telegram.sendMessage(privateGroupID, ctx.from.username + ` написав: ${ctx.message.text}`);
   } else if (ctx.updateType === 'callback_query') {
-    bot.telegram.sendMessage(-498566951, ctx.from.username + ' натиснув кнопку');
+    bot.telegram.sendMessage(privateGroupID, ctx.from.username + ' натиснув кнопку');
   } else {
-    bot.telegram.sendMessage(-498566951, ctx.from.username + ' написав: ' + ctx.updateSubTypes[0]);
+    bot.telegram.sendMessage(privateGroupID, ctx.from.username + ` написав: ${ctx.updateSubTypes[0]}`);
   }
   next();
 });
 
 //start message logger
 function sendStartMessage(ctx) {
-  let startMessage = `Здрастуйте, цей бот служить особистим щоденником Дані,
+  let startMessage = `Вітаю! Цей бот слугує особистим щоденником Дані,
                       в ньому записані всі аналізи та кількість таблеток яка
                       він випив протягом якогось часу`;
   if (ctx.from.username === 'ddynikov') {
@@ -42,10 +43,9 @@ function sendStartMessage(ctx) {
     });
 }
 
-//кривая генерация выплёвывания рандомных фактов
+// генерація видавання рандомних фактів за допомогою фор іча(probably error here xdddd)
 const getData = async () => {
-      // ↓ encapsulate  ↓
-  //const json = await axios('https://spreadsheets.google.com/feeds/cells/1JBUpCCPwOpUOFyPCmeqhUZmbvDoTc_Hytb52RRv_vhE/1/public/full?alt=json');
+  const json = await axios(process.env.spreadsheets);
   const data = json.data.feed.entry;
   const factStore = [];
   data.forEach(item => {
@@ -59,19 +59,19 @@ const getData = async () => {
 };
 
 bot.action('doc', ctx => {
-  const infoMessage = 'Узнать информацию. Выберите, что хотите узнать';
+  const infoMessage = 'Дізнатись інформацію. Оберіть, що хочете дізнатись';
   ctx.deleteMessage();
   bot.telegram.sendMessage(ctx.chat.id, infoMessage, {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: 'Прошлые анализы', callback_data: 'analyses' },
+          { text: 'Попередні аналізи', callback_data: 'analyses' },
         ],
         [
-          { text: 'Таблетки', callback_data: 'pills' },
+          { text: 'Пігулки', callback_data: 'pills' },
         ],
         [
-          { text: 'Вернуться в меню', callback_data: 'start' },
+          { text: 'Повернутися в меню', callback_data: 'start' },
         ]
       ]
     }
@@ -127,7 +127,6 @@ bot.action('user', ctx => {
       inline_keyboard: [
         [
           { text: 'Рандомний факт', callback_data: 'fact' },
-
         ],
         [
           { text: 'Подивитись дослідження', callback_data: 'analyses' },
@@ -140,15 +139,12 @@ bot.action('user', ctx => {
         ]
       ]
     }
-
   });
 });
 
 bot.action('fact', async ctx => {
   const factStore = await getData();
   factStore.shift();
-
-
   const k = Math.floor(Math.random() * factStore.length);
   const fact = factStore[k];
   const message = `${fact.val}`;
@@ -199,7 +195,6 @@ for (let i = 1; i <= 4; i++) {
     date = initial.fourth;
   }
 }
-
 
 // bot.command('/info', (ctx) => {
 //     ctx.reply('123')
