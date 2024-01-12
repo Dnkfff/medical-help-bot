@@ -2,7 +2,7 @@
 
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const privateGroupID = process.env.GROUPID
+const privateGroupID = process.env.GROUPID;
 const axios = require('axios');
 
 bot.use(async (ctx, next) => {
