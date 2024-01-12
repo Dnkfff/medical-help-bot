@@ -23,7 +23,6 @@ function sendStartMessage(ctx) {
                       він випив протягом якогось часу`;
   if (ctx.from.username === 'ddynikov') {
     startMessage = 'Привіт хазяїн';
-
   }
   bot.telegram.sendMessage(ctx.chat.id, startMessage,
     {
@@ -43,7 +42,10 @@ function sendStartMessage(ctx) {
     });
 }
 
-// генерація видавання рандомних фактів за допомогою фор іча(probably error here xdddd)
+/* генерація видавання рандомних фактів за допомогою форіча 
+ (probably error here xdddd)
+ test this func
+*/
 const getData = async () => {
   const json = await axios(process.env.spreadsheets);
   const data = json.data.feed.entry;
