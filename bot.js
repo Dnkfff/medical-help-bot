@@ -7,11 +7,14 @@ const axios = require('axios');
 
 bot.use(async (ctx, next) => {
   if (ctx.updateSubTypes[0] === 'text') {
-    bot.telegram.sendMessage(privateGroupID, ctx.from.username + ` написав: ${ctx.message.text}`);
+    bot.telegram.sendMessage(privateGroupID,
+      ctx.from.username + ` написав: ${ctx.message.text}`);
   } else if (ctx.updateType === 'callback_query') {
-    bot.telegram.sendMessage(privateGroupID, ctx.from.username + ' натиснув кнопку');
+    bot.telegram.sendMessage(privateGroupID,
+      ctx.from.username + ' натиснув кнопку');
   } else {
-    bot.telegram.sendMessage(privateGroupID, ctx.from.username + ` написав: ${ctx.updateSubTypes[0]}`);
+    bot.telegram.sendMessage(privateGroupID,
+      ctx.from.username + ` написав: ${ctx.updateSubTypes[0]}`);
   }
   next();
 });
@@ -42,9 +45,9 @@ function sendStartMessage(ctx) {
     });
 }
 
-/* генерація видавання рандомних фактів за допомогою форіча 
+/* генерація видавання рандомних фактів за допомогою форіча
  (probably error here xdddd)
- test this func
+ test this func a bit later
 */
 const getData = async () => {
   const json = await axios(process.env.spreadsheets);
