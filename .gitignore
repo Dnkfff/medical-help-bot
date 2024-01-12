@@ -2,3 +2,4 @@ node_modules
 test.js
 analyses.js
 gormons.js
+.env
